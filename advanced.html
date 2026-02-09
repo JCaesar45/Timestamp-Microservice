@@ -1,0 +1,1264 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChronoStream | Temporal API Nexus</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;700&family=Syncopate:wght@400;700&display=swap');
+
+    :root {
+      --neon-cyan: #00f3ff;
+      --neon-pink: #ff00ff;
+      --neon-gold: #ffd700;
+      --deep-void: #050508;
+      --glass: rgba(255, 255, 255, 0.03);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--deep-void);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    #quantum-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .noise-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.05"/></svg>');
+      z-index: 1;
+      pointer-events: none;
+      animation: noiseShift 0.5s steps(10) infinite;
+    }
+
+    @keyframes noiseShift {
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      10% {
+        transform: translate(-5%, -5%);
+      }
+
+      20% {
+        transform: translate(5%, 5%);
+      }
+
+      30% {
+        transform: translate(-5%, 5%);
+      }
+
+      40% {
+        transform: translate(5%, -5%);
+      }
+
+      50% {
+        transform: translate(-5%, 0%);
+      }
+
+      60% {
+        transform: translate(5%, 0%);
+      }
+
+      70% {
+        transform: translate(0%, 5%);
+      }
+
+      80% {
+        transform: translate(0%, -5%);
+      }
+
+      90% {
+        transform: translate(5%, 5%);
+      }
+    }
+
+    .main-container {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 0;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+      margin-bottom: 3rem;
+    }
+
+    .logo {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+
+    .logo::after {
+      content: '◈';
+      position: absolute;
+      right: -2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--neon-gold);
+      font-size: 1rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 0.3;
+        transform: translateY(-50%) scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.2);
+      }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      position: relative;
+      padding: 0.5rem 0;
+    }
+
+    .nav-links a::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--neon-cyan);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--neon-cyan);
+    }
+
+    .nav-links a:hover::before {
+      width: 100%;
+    }
+
+    .hero-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      min-height: 60vh;
+      margin-bottom: 4rem;
+    }
+
+    .hero-content h1 {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 3.5rem;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff 0%, var(--neon-cyan) 50%, var(--neon-pink) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textGlitch 5s infinite;
+    }
+
+    @keyframes textGlitch {
+
+      0%,
+      90%,
+      100% {
+        transform: translate(0);
+      }
+
+      92% {
+        transform: translate(-2px, 2px);
+      }
+
+      94% {
+        transform: translate(2px, -2px);
+      }
+
+      96% {
+        transform: translate(-2px, -2px);
+      }
+
+      98% {
+        transform: translate(2px, 2px);
+      }
+    }
+
+    .hero-content p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.1rem;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      max-width: 500px;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .stat-box {
+      background: var(--glass);
+      border: 1px solid rgba(0, 243, 255, 0.1);
+      padding: 1.5rem;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s;
+    }
+
+    .stat-box:hover {
+      border-color: var(--neon-cyan);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 40px rgba(0, 243, 255, 0.1);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      color: var(--neon-cyan);
+      font-weight: 700;
+    }
+
+    .temporal-interface {
+      background: var(--glass);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .temporal-interface::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent, var(--neon-cyan), transparent 30%);
+      animation: rotate 4s linear infinite;
+      opacity: 0.1;
+    }
+
+    @keyframes rotate {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .interface-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .input-matrix {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .chronos-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .chronos-input:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+    }
+
+    .input-glow {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+      transition: width 0.3s;
+    }
+
+    .chronos-input:focus~.input-glow {
+      width: 100%;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .quantum-btn {
+      background: transparent;
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quantum-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .quantum-btn:hover::before {
+      left: 100%;
+    }
+
+    .quantum-btn:hover {
+      background: rgba(0, 243, 255, 0.1);
+      box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .quantum-btn.primary {
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+      border: none;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .quantum-btn.primary:hover {
+      box-shadow: 0 0 40px rgba(0, 243, 255, 0.5);
+    }
+
+    .result-void {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      border: 1px solid rgba(0, 243, 255, 0.1);
+      min-height: 150px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-void.empty::after {
+      content: 'Awaiting temporal data...';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 0.9rem;
+    }
+
+    .data-stream {
+      display: none;
+    }
+
+    .data-stream.active {
+      display: block;
+      animation: dataReveal 0.5s ease-out;
+    }
+
+    @keyframes dataReveal {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+      transition: all 0.3s;
+    }
+
+    .data-row:hover {
+      background: rgba(0, 243, 255, 0.05);
+    }
+
+    .data-row:last-child {
+      border-bottom: none;
+    }
+
+    .data-key {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .data-value {
+      color: var(--neon-cyan);
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .data-value.utc {
+      color: var(--neon-gold);
+      font-size: 0.9rem;
+    }
+
+    .error-flash {
+      color: #ff0040;
+      text-align: center;
+      padding: 2rem;
+      animation: errorPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes errorPulse {
+
+      0%,
+      100% {
+        opacity: 0.7;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    .endpoint-showcase {
+      margin-top: 4rem;
+    }
+
+    .section-title {
+      font-family: 'Syncopate', sans-serif;
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-cyan), transparent);
+    }
+
+    .endpoint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+    }
+
+    .endpoint-card {
+      background: var(--glass);
+      border: 1px solid rgba(0, 243, 255, 0.1);
+      border-radius: 12px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .endpoint-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .endpoint-card:hover {
+      border-color: rgba(0, 243, 255, 0.3);
+      transform: translateY(-5px);
+    }
+
+    .endpoint-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .method-badge {
+      display: inline-block;
+      background: rgba(0, 243, 255, 0.2);
+      color: var(--neon-cyan);
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .endpoint-path {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 1rem;
+      word-break: break-all;
+    }
+
+    .endpoint-desc {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .code-block {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-block::before {
+      content: 'JSON';
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .json-key {
+      color: #ff79c6;
+    }
+
+    .json-string {
+      color: #f1fa8c;
+    }
+
+    .json-number {
+      color: #bd93f9;
+    }
+
+    .json-boolean {
+      color: #ff79c6;
+    }
+
+    .timeline-stream {
+      margin-top: 4rem;
+      padding: 2rem;
+      background: var(--glass);
+      border-radius: 16px;
+      border: 1px solid rgba(0, 243, 255, 0.1);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      border-left: 3px solid var(--neon-cyan);
+      transition: all 0.3s;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .history-item:hover {
+      background: rgba(0, 243, 255, 0.05);
+      transform: translateX(5px);
+    }
+
+    .history-time {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+      min-width: 80px;
+    }
+
+    .history-content {
+      flex: 1;
+    }
+
+    .history-input {
+      color: var(--neon-pink);
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .history-output {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.8rem;
+    }
+
+    .clear-history {
+      background: transparent;
+      border: 1px solid rgba(255, 0, 255, 0.3);
+      color: var(--neon-pink);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      transition: all 0.3s;
+    }
+
+    .clear-history:hover {
+      background: rgba(255, 0, 255, 0.1);
+      border-color: var(--neon-pink);
+    }
+
+    .empty-history {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.2);
+      padding: 3rem;
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 6rem;
+      padding: 3rem 0;
+      border-top: 1px solid rgba(0, 243, 255, 0.1);
+      text-align: center;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: var(--neon-cyan);
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #50fa7b;
+      border-radius: 50%;
+      animation: statusPulse 2s infinite;
+    }
+
+    @keyframes statusPulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    @media (max-width: 968px) {
+      .hero-section {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-content h1 {
+        font-size: 2rem;
+      }
+
+      .endpoint-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .loading-ripple {
+      display: inline-block;
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .loading-ripple div {
+      position: absolute;
+      border: 4px solid var(--neon-cyan);
+      opacity: 1;
+      border-radius: 50%;
+      animation: loadingRipple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    }
+
+    .loading-ripple div:nth-child(2) {
+      animation-delay: -0.5s;
+    }
+
+    @keyframes loadingRipple {
+      0% {
+        top: 36px;
+        left: 36px;
+        width: 0;
+        height: 0;
+        opacity: 0;
+      }
+
+      4.9% {
+        top: 36px;
+        left: 36px;
+        width: 0;
+        height: 0;
+        opacity: 0;
+      }
+
+      5% {
+        top: 36px;
+        left: 36px;
+        width: 0;
+        height: 0;
+        opacity: 1;
+      }
+
+      100% {
+        top: 0;
+        left: 0;
+        width: 72px;
+        height: 72px;
+        opacity: 0;
+      }
+    }
+
+    .loader-container {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      height: 150px;
+    }
+
+    .loader-container.active {
+      display: flex;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="quantum-canvas"></canvas>
+  <div class="noise-overlay"></div>
+
+  <div class="main-container">
+    <header>
+      <div class="logo">ChronoStream</div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#interface">Interface</a></li>
+          <li><a href="#endpoints">Endpoints</a></li>
+          <li><a href="#history">History</a></li>
+          <li><a href="https://github.com" target="_blank">Source</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1>Temporal<br>Conversion<br>Matrix</h1>
+        <p>Advanced timestamp microservice API with quantum-precision date parsing. Convert between Unix epochs and UTC coordinates with zero-latency response cycles.</p>
+        <div class="hero-stats">
+          <div class="stat-box">
+            <div class="stat-label">Precision</div>
+            <div class="stat-value">±1ms</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Uptime</div>
+            <div class="stat-value">99.99%</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Requests</div>
+            <div class="stat-value" id="request-counter">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="temporal-interface" id="interface">
+        <div class="interface-content">
+          <div class="input-matrix">
+            <div class="input-group">
+              <label>Temporal Input Vector</label>
+              <input type="text" class="chronos-input" id="temporal-input" placeholder="1451001600000 | 2015-12-25 | Dec 25, 2015">
+              <div class="input-glow"></div>
+            </div>
+
+            <div class="action-grid">
+              <button class="quantum-btn primary" onclick="processTemporalData()">Initialize Parse</button>
+              <button class="quantum-btn" onclick="injectCurrentTimestamp()">Current Epoch</button>
+              <button class="quantum-btn" onclick="clearTemporalVoid()">Clear Matrix</button>
+              <button class="quantum-btn" onclick="randomizeDate()">Random Date</button>
+            </div>
+          </div>
+
+          <div class="result-void empty" id="result-void">
+            <div class="loader-container" id="loader">
+              <div class="loading-ripple">
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+            <div class="data-stream" id="data-stream"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="endpoint-showcase" id="endpoints">
+      <h2 class="section-title">API Endpoints</h2>
+      <div class="endpoint-grid">
+        <div class="endpoint-card">
+          <span class="method-badge">GET</span>
+          <div class="endpoint-path">/api/:date?</div>
+          <div class="endpoint-desc">Primary temporal conversion endpoint. Accepts Unix timestamps or date strings. Returns JSON with unix and utc properties.</div>
+          <div class="code-block">
+            {<br>
+            &nbsp;&nbsp;<span class="json-key">"unix"</span>: <span class="json-number">1451001600000</span>,<br>
+            &nbsp;&nbsp;<span class="json-key">"utc"</span>: <span class="json-string">"Fri, 25 Dec 2015 00:00:00 GMT"</span><br>
+            }
+          </div>
+        </div>
+
+        <div class="endpoint-card">
+          <span class="method-badge">GET</span>
+          <div class="endpoint-path">/api/1451001600000</div>
+          <div class="endpoint-desc">Direct Unix timestamp input. Milliseconds since January 1, 1970. Returns corresponding UTC coordinate.</div>
+          <div class="code-block">
+            {<br>
+            &nbsp;&nbsp;<span class="json-key">"unix"</span>: <span class="json-number">1451001600000</span>,<br>
+            &nbsp;&nbsp;<span class="json-key">"utc"</span>: <span class="json-string">"Fri, 25 Dec 2015 00:00:00 GMT"</span><br>
+            }
+          </div>
+        </div>
+
+        <div class="endpoint-card">
+          <span class="method-badge">GET</span>
+          <div class="endpoint-path">/api/</div>
+          <div class="endpoint-desc">Empty parameter returns current server time. Useful for synchronization and heartbeat monitoring.</div>
+          <div class="code-block">
+            {<br>
+            &nbsp;&nbsp;<span class="json-key">"unix"</span>: <span class="json-number">1704067200000</span>,<br>
+            &nbsp;&nbsp;<span class="json-key">"utc"</span>: <span class="json-string">"Mon, 01 Jan 2024 00:00:00 GMT"</span><br>
+            }
+          </div>
+        </div>
+
+        <div class="endpoint-card">
+          <span class="method-badge">GET</span>
+          <div class="endpoint-path">/api/invalid-date</div>
+          <div class="endpoint-desc">Error handling demonstration. Invalid inputs return structured error object with descriptive messaging.</div>
+          <div class="code-block">
+            {<br>
+            &nbsp;&nbsp;<span class="json-key">"error"</span>: <span class="json-string">"Invalid Date"</span><br>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="timeline-stream" id="history">
+      <div class="timeline-header">
+        <h2 class="section-title">Temporal History</h2>
+        <button class="clear-history" onclick="clearHistory()">Purge Logs</button>
+      </div>
+      <div class="history-list" id="history-list">
+        <div class="empty-history">No temporal data streams recorded</div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-links">
+        <a href="https://github.com" target="_blank">GitHub</a>
+        <a href="https://freecodecamp.org" target="_blank">freeCodeCamp</a>
+        <a href="https://replit.com" target="_blank">Replit</a>
+      </div>
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span>System Operational</span>
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.8rem;">
+        ChronoStream Temporal API v2.0.4 | Protocol: HTTP/2 | Node.js 20 LTS
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    // Quantum Canvas Animation
+    const canvas = document.getElementById('quantum-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    let connections = [];
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    class Particle {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.radius = Math.random() * 2 + 1;
+        this.alpha = Math.random() * 0.5 + 0.2;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 243, 255, ${this.alpha})`;
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      const count = Math.min(window.innerWidth / 10, 100);
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function drawConnections() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(0, 243, 255, ${0.1 * (1 - dist / 150)})`;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      drawConnections();
+      requestAnimationFrame(animate);
+    }
+    window.addEventListener('resize', () => {
+      resize();
+      initParticles();
+    });
+    resize();
+    initParticles();
+    animate();
+    // Temporal Processing Logic
+    let requestCount = parseInt(localStorage.getItem('requestCount') || '0');
+    let history = JSON.parse(localStorage.getItem('temporalHistory') || '[]');
+    document.getElementById('request-counter').textContent = requestCount;
+
+    function updateRequestCounter() {
+      requestCount++;
+      document.getElementById('request-counter').textContent = requestCount;
+      localStorage.setItem('requestCount', requestCount.toString());
+    }
+
+    function processTemporalData() {
+      const input = document.getElementById('temporal-input').value.trim();
+      const resultVoid = document.getElementById('result-void');
+      const dataStream = document.getElementById('data-stream');
+      const loader = document.getElementById('loader');
+      if (!input) {
+        showError('Input vector required');
+        return;
+      }
+      resultVoid.classList.remove('empty');
+      dataStream.classList.remove('active');
+      loader.classList.add('active');
+      setTimeout(() => {
+        loader.classList.remove('active');
+        let date;
+        let isUnix = /^\d+$/.test(input);
+        if (isUnix) {
+          date = new Date(parseInt(input));
+        } else {
+          date = new Date(input);
+        }
+        if (date.toString() === 'Invalid Date') {
+          showError('Invalid Date');
+          addToHistory(input, 'Error: Invalid Date', false);
+        } else {
+          const result = {
+            unix: date.getTime(),
+            utc: date.toUTCString()
+          };
+          displayResult(result);
+          addToHistory(input, `Unix: ${result.unix}, UTC: ${result.utc}`, true);
+          updateRequestCounter();
+        }
+      }, 600);
+    }
+
+    function showError(msg) {
+      const dataStream = document.getElementById('data-stream');
+      dataStream.innerHTML = `<div class="error-flash">${msg}</div>`;
+      dataStream.classList.add('active');
+    }
+
+    function displayResult(data) {
+      const dataStream = document.getElementById('data-stream');
+      dataStream.innerHTML = `
+                <div class="data-row">
+                    <span class="data-key">Unix Timestamp</span>
+                    <span class="data-value">${data.unix}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-key">UTC Coordinate</span>
+                    <span class="data-value utc">${data.utc}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-key">ISO Format</span>
+                    <span class="data-value utc">${new Date(data.unix).toISOString()}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-key">Local Time</span>
+                    <span class="data-value utc">${new Date(data.unix).toString()}</span>
+                </div>
+            `;
+      dataStream.classList.add('active');
+    }
+
+    function injectCurrentTimestamp() {
+      const now = Date.now();
+      document.getElementById('temporal-input').value = now.toString();
+      processTemporalData();
+    }
+
+    function clearTemporalVoid() {
+      document.getElementById('temporal-input').value = '';
+      const resultVoid = document.getElementById('result-void');
+      const dataStream = document.getElementById('data-stream');
+      resultVoid.classList.add('empty');
+      dataStream.classList.remove('active');
+      dataStream.innerHTML = '';
+    }
+
+    function randomizeDate() {
+      const start = new Date(1970, 0, 1).getTime();
+      const end = Date.now();
+      const randomTime = Math.floor(Math.random() * (end - start) + start);
+      const formats = [
+        randomTime.toString(),
+        new Date(randomTime).toISOString().split('T')[0],
+        new Date(randomTime).toDateString()
+      ];
+      document.getElementById('temporal-input').value = formats[Math.floor(Math.random() * formats.length)];
+      processTemporalData();
+    }
+
+    function addToHistory(input, output, success) {
+      const item = {
+        input: input,
+        output: output.length > 60 ? output.substring(0, 60) + '...' : output,
+        success: success,
+        time: new Date().toLocaleTimeString()
+      };
+      history.unshift(item);
+      if (history.length > 10) history.pop();
+      localStorage.setItem('temporalHistory', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('history-list');
+      if (history.length === 0) {
+        list.innerHTML = '<div class="empty-history">No temporal data streams recorded</div>';
+        return;
+      }
+      list.innerHTML = history.map(item => `
+                <div class="history-item" style="border-left-color: ${item.success ? 'var(--neon-cyan)' : '#ff0040'}">
+                    <div class="history-time">${item.time}</div>
+                    <div class="history-content">
+                        <div class="history-input">${escapeHtml(item.input)}</div>
+                        <div class="history-output">${escapeHtml(item.output)}</div>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function clearHistory() {
+      history = [];
+      localStorage.removeItem('temporalHistory');
+      renderHistory();
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'Enter':
+            e.preventDefault();
+            processTemporalData();
+            break;
+          case 'k':
+            e.preventDefault();
+            clearTemporalVoid();
+            break;
+          case 't':
+            e.preventDefault();
+            injectCurrentTimestamp();
+            break;
+        }
+      }
+    });
+    // Initialize
+    renderHistory();
+    // Input focus effects
+    const input = document.getElementById('temporal-input');
+    input.addEventListener('focus', () => {
+      document.querySelector('.temporal-interface').style.boxShadow = '0 0 60px rgba(0, 243, 255, 0.1)';
+    });
+    input.addEventListener('blur', () => {
+      document.querySelector('.temporal-interface').style.boxShadow = 'none';
+    });
+    // Live clock in title
+    setInterval(() => {
+      const now = new Date();
+      document.title = `ChronoStream | ${now.toLocaleTimeString()} UTC`;
+    }, 1000);
+  </script>
+</body>
+
+</html>
