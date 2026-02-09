@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timestamp Microservice API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .endpoint::before {
+            content: 'GET';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .example-box {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            position: relative;
+        }
+
+        .example-box .label {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .json {
+            color: #a6e22e;
+        }
+
+        .key {
+            color: #f92672;
+        }
+
+        .string {
+            color: #e6db74;
+        }
+
+        .number {
+            color: #ae81ff;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-group input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 100px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .usage-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .usage-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .timestamp-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏱️ Timestamp Microservice</h1>
+            <p>Convert between Unix timestamps and UTC dates with ease</p>
+        </div>
+
+        <div class="content">
+            <!-- Live Clock -->
+            <div class="section">
+                <h2>🕐 Current Server Time</h2>
+                <div class="timestamp-display" id="liveTimestamp">Loading...</div>
+            </div>
+
+            <!-- Interactive Demo -->
+            <div class="section interactive-demo">
+                <h2>🚀 Try It Now</h2>
+                <p>Enter a date string or Unix timestamp to test the API:</p>
+                <div class="input-group">
+                    <input type="text" id="dateInput" placeholder="e.g., 2015-12-25 or 1451001600000" />
+                    <button class="btn" onclick="testAPI()">Convert</button>
+                    <button class="btn" onclick="testCurrent()" style="background: #28a745;">Current Time</button>
+                </div>
+                <div id="resultBox" class="result-box"></div>
+            </div>
+
+            <!-- API Documentation -->
+            <div class="section">
+                <h2>📚 API Endpoints</h2>
+                
+                <div class="endpoint">
+                    <strong>/api/:date?</strong><br>
+                    <small>Returns Unix timestamp and UTC date for the provided date parameter</small>
+                </div>
+
+                <div class="usage-grid">
+                    <div class="usage-card">
+                        <h3>Valid Date String</h3>
+                        <div class="example-box">
+                            <span class="label">Request</span>
+                            GET /api/2015-12-25
+                        </div>
+                        <div class="example-box">
+                            <span class="label">Response</span>
+                            {<br>
+                            &nbsp;&nbsp;<span class="key">"unix"</span>: <span class="number">1451001600000</span>,<br>
+                            &nbsp;&nbsp;<span class="key">"utc"</span>: <span class="string">"Fri, 25 Dec 2015 00:00:00 GMT"</span><br>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="usage-card">
+                        <h3>Unix Timestamp</h3>
+                        <div class="example-box">
+                            <span class="label">Request</span>
+                            GET /api/1451001600000
+                        </div>
+                        <div class="example-box">
+                            <span class="label">Response</span>
+                            {<br>
+                            &nbsp;&nbsp;<span class="key">"unix"</span>: <span class="number">1451001600000</span>,<br>
+                            &nbsp;&nbsp;<span class="key">"utc"</span>: <span class="string">"Fri, 25 Dec 2015 00:00:00 GMT"</span><br>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="usage-card">
+                        <h3>Empty Parameter (Current Time)</h3>
+                        <div class="example-box">
+                            <span class="label">Request</span>
+                            GET /api/
+                        </div>
+                        <div class="example-box">
+                            <span class="label">Response</span>
+                            {<br>
+                            &nbsp;&nbsp;<span class="key">"unix"</span>: <span class="number">&lt;current_timestamp&gt;</span>,<br>
+                            &nbsp;&nbsp;<span class="key">"utc"</span>: <span class="string">"&lt;current_utc_date&gt;"</span><br>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="usage-card">
+                        <h3>Invalid Date</h3>
+                        <div class="example-box">
+                            <span class="label">Request</span>
+                            GET /api/invalid-date
+                        </div>
+                        <div class="example-box">
+                            <span class="label">Response</span>
+                            {<br>
+                            &nbsp;&nbsp;<span class="key">"error"</span>: <span class="string">"Invalid Date"</span><br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Info -->
+            <div class="section">
+                <h2>⚙️ Project Structure</h2>
+                <div class="example-box">
+<span class="label">File Structure</span>
+timestamp-microservice/
+├── server.js          <span class="json">// Express server & API routes</span>
+├── package.json       <span class="json">// Dependencies</span>
+├── .env               <span class="json">// Environment variables</span>
+└── public/            <span class="json">// Static files (this page)</span>
+    └── index.html
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🧪 Test Cases</h2>
+                <ul style="line-height: 2; color: #555;">
+                    <li>✅ <code>/api/2015-12-25</code> → Returns Unix timestamp and UTC</li>
+                    <li>✅ <code>/api/1451001600000</code> → Returns same timestamp and UTC date</li>
+                    <li>✅ <code>/api/</code> → Returns current timestamp and UTC</li>
+                    <li>✅ <code>/api/invalid</code> → Returns error object</li>
+                    <li>✅ <code>/api/2016-02-31</code> → Handles invalid dates gracefully</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built for freeCodeCamp Backend API Certification</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                <a href="#" style="color: #667eea; text-decoration: none;">View Source Code</a> | 
+                <a href="#" style="color: #667eea; text-decoration: none;">Live Demo</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Update live timestamp display
+        function updateLiveTimestamp() {
+            const now = new Date();
+            const unix = now.getTime();
+            const utc = now.toUTCString();
+            document.getElementById('liveTimestamp').innerHTML = 
+                `<div style="font-size: 0.5em; color: #666; margin-bottom: 10px;">${utc}</div>
+                 <div>${unix}</div>`;
+        }
+        updateLiveTimestamp();
+        setInterval(updateLiveTimestamp, 1000);
+
+        // Test API functionality (simulated for demo)
+        function testAPI() {
+            const input = document.getElementById('dateInput').value.trim();
+            const resultBox = document.getElementById('resultBox');
+            
+            if (!input) {
+                resultBox.innerHTML = '<div class="error">Please enter a date or timestamp</div>';
+                resultBox.classList.add('show');
+                return;
+            }
+
+            let date;
+            let isUnix = false;
+
+            // Check if input is a Unix timestamp (all digits)
+            if (/^\d+$/.test(input)) {
+                date = new Date(parseInt(input));
+                isUnix = true;
+            } else {
+                date = new Date(input);
+            }
+
+            if (date.toString() === 'Invalid Date') {
+                resultBox.innerHTML = '<div class="error">Invalid Date</div>';
+            } else {
+                const result = {
+                    unix: date.getTime(),
+                    utc: date.toUTCString()
+                };
+                resultBox.innerHTML = `
+                    <div class="success">
+                        <strong>Success!</strong>
+                        <div class="example-box" style="margin-top: 10px; text-align: left;">
+                            {<br>
+                            &nbsp;&nbsp;<span class="key">"unix"</span>: <span class="number">${result.unix}</span>,<br>
+                            &nbsp;&nbsp;<span class="key">"utc"</span>: <span class="string">"${result.utc}"</span><br>
+                            }
+                        </div>
+                    </div>
+                `;
+            }
+            resultBox.classList.add('show');
+        }
+
+        function testCurrent() {
+            const now = new Date();
+            const resultBox = document.getElementById('resultBox');
+            const result = {
+                unix: now.getTime(),
+                utc: now.toUTCString()
+            };
+            resultBox.innerHTML = `
+                <div class="success">
+                    <strong>Current Server Time</strong>
+                    <div class="example-box" style="margin-top: 10px; text-align: left;">
+                        {<br>
+                        &nbsp;&nbsp;<span class="key">"unix"</span>: <span class="number">${result.unix}</span>,<br>
+                        &nbsp;&nbsp;<span class="key">"utc"</span>: <span class="string">"${result.utc}"</span><br>
+                        }
+                    </div>
+                </div>
+            `;
+            resultBox.classList.add('show');
+            document.getElementById('dateInput').value = '';
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('dateInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') testAPI();
+        });
+    </script>
+</body>
+</html>
